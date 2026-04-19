@@ -18,10 +18,7 @@ PASSWORD = "dfnilrfvfahsnvjw"
 app = Flask(__name__, template_folder='.', static_folder='.', static_url_path='')
 app.secret_key = "leave_flow_secret_key"
 
-# ==========================================
-# FACULTY CREDENTIALS DATABASE (IN-MEMORY FALLBACK)
-# ==========================================
-FACULTY_CREDENTIALS = {}
+
 
 # ==========================================
 # FLASK ROUTES
@@ -61,18 +58,8 @@ def login():
                         session['faculty_department'] = fac['department']
                         flash(f"Logged in successfully as {fac['name']}", "success")
                         return redirect(url_for('faculty_dashboard'))
-            except:
-                pass
-            
-            # Fallback to local credentials
-            if username in FACULTY_CREDENTIALS and FACULTY_CREDENTIALS[username]['password'] == password:
-                session['role'] = 'faculty'
-                session['faculty_id'] = username
-                session['faculty_name'] = FACULTY_CREDENTIALS[username]['name']
-                session['faculty_email'] = FACULTY_CREDENTIALS[username]['email']
-                session['faculty_department'] = FACULTY_CREDENTIALS[username]['department']
-                flash(f"Logged in successfully as {FACULTY_CREDENTIALS[username]['name']}", "success")
-                return redirect(url_for('faculty_dashboard'))
+            except Exception as e:
+                print(f"Supabase login error: {str(e)}")
             
             flash("Invalid Faculty ID or password. Please try again.", "danger")
         
@@ -337,11 +324,7 @@ def manage_faculty():
     except Exception as e:
         print(f"[MANAGE FACULTY] Supabase error: {str(e)}")
     
-    # If empty, use local credentials
-    if not faculty_list:
-        faculty_list = [{"id": i, "faculty_id": fid, **fac} for i, (fid, fac) in enumerate(FACULTY_CREDENTIALS.items())]
-        if len(FACULTY_CREDENTIALS) > 0:
-            print(f"[MANAGE FACULTY] Loaded {len(faculty_list)} faculty from local storage")
+
     
     return render_template('hod_faculty_management.html', faculty_list=faculty_list)
 
@@ -371,20 +354,20 @@ def create_faculty():
         flash("Password must be at least 6 characters.", "danger")
         return redirect(url_for('manage_faculty'))
     
-    # Validation for duplicate faculty ID
-    if faculty_id in FACULTY_CREDENTIALS:
-        flash(f"Faculty ID '{faculty_id}' already exists.", "danger")
-        return redirect(url_for('manage_faculty'))
-    
-    # Always add to local credentials first (primary storage)
-    FACULTY_CREDENTIALS[faculty_id] = {"password": password, "name": name, "email": email, "department": department}
-    
-    # Try to also create in Supabase
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
         "Content-Type": "application/json"
     }
+    
+    # Validation for duplicate faculty ID in Supabase
+    try:
+        check_resp = requests.get(f"{SUPABASE_FACULTY_URL}?faculty_id=eq.{faculty_id}", headers=headers, timeout=5)
+        if check_resp.status_code == 200 and len(check_resp.json()) > 0:
+            flash(f"Faculty ID '{faculty_id}' already exists.", "danger")
+            return redirect(url_for('manage_faculty'))
+    except Exception as e:
+        print(f"[CREATE FACULTY] Supabase check error: {str(e)}")
     
     payload = {
         "faculty_id": faculty_id,
@@ -414,12 +397,10 @@ def create_faculty():
     except Exception as email_error:
         print(f"[CREATE FACULTY] Email error: {str(email_error)}")
     
-    msg = f"Faculty '{name}' created successfully!"
     if supabase_success:
-        msg += " ✓ Saved to Supabase."
+        msg = f"Faculty '{name}' created successfully! ✓ Saved to Supabase. Email sent to {email}"
     else:
-        msg += " (Stored locally)"
-    msg += f" Email sent to {email}"
+        msg = f"Failed to save faculty '{name}' to Supabase."
     flash(msg, "success")
     
     return redirect(url_for('manage_faculty'))
@@ -463,12 +444,7 @@ def update_faculty():
             print("Supabase timeout")
         except Exception as supabase_error:
             print(f"Supabase error: {str(supabase_error)}")
-        
-        # Also update local credentials
-        if faculty_id in FACULTY_CREDENTIALS:
-            FACULTY_CREDENTIALS[faculty_id]['name'] = name
-            FACULTY_CREDENTIALS[faculty_id]['email'] = email
-            FACULTY_CREDENTIALS[faculty_id]['department'] = department
+
         
         flash("Faculty information updated successfully!", "success")
         return redirect(url_for('manage_faculty'))
@@ -501,18 +477,7 @@ def delete_faculty(faculty_id):
         except Exception as supabase_error:
             print(f"Supabase delete error: {str(supabase_error)}")
         
-        # Also try to remove from local credentials if faculty_id is a key
-        removed_local = False
-        for fid in list(FACULTY_CREDENTIALS.keys()):
-            if str(faculty_id).lower() in str(fid).lower() or str(faculty_id) == fid:
-                del FACULTY_CREDENTIALS[fid]
-                removed_local = True
-                break
-        
-        if removed_local:
-            flash("Faculty deleted successfully!", "success")
-        else:
-            flash("Faculty deleted from system!", "success")
+        flash("Faculty deleted from Supabase successfully!", "success")
             
     except Exception as e:
         print(f"Delete error: {str(e)}")

@@ -12,19 +12,23 @@
                 <div class="row g-2 g-md-3 mb-3 mb-md-4">
                     <div class="col-12 col-md-6">
                         <label class="form-label fw-bold mb-2 small">Full Name</label>
-                        <input type="text" name="student_name" class="form-control form-control-sm" value="{{ faculty_name }}" readonly required>
+                        <input type="text" name="student_name" class="form-control form-control-sm"
+                            value="{{ faculty_name }}" readonly required>
                     </div>
                     <div class="col-12 col-md-6">
                         <label class="form-label fw-bold mb-2 small">Email</label>
-                        <input type="email" name="email" class="form-control form-control-sm" value="{{ faculty_email }}" readonly required>
+                        <input type="email" name="email" class="form-control form-control-sm"
+                            value="{{ faculty_email }}" readonly required>
                     </div>
                     <div class="col-12 col-md-6">
                         <label class="form-label fw-bold mb-2 small">Department</label>
-                        <input type="text" name="department" class="form-control form-control-sm" value="{{ faculty_department }}" readonly required>
+                        <input type="text" name="department" class="form-control form-control-sm"
+                            value="{{ faculty_department }}" readonly required>
                     </div>
                     <div class="col-12 col-md-6">
                         <label class="form-label fw-bold mb-2 small">Reason for Leave</label>
-                        <input type="text" name="reason" class="form-control form-control-sm" placeholder="Medical, Personal, Research, etc." required>
+                        <input type="text" name="reason" class="form-control form-control-sm"
+                            placeholder="Medical, Personal, Research, etc." required>
                     </div>
                     <div class="col-12 col-md-6">
                         <label class="form-label fw-bold mb-2 small">From Date</label>
@@ -37,7 +41,8 @@
                 </div>
                 <div class="d-flex gap-2 justify-content-end flex-wrap">
                     <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">Sign Out</a>
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-send-fill me-1"></i> Submit</button>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-send-fill me-1"></i>
+                        Submit</button>
                 </div>
             </form>
         </div>
@@ -47,9 +52,12 @@
         <div class="card p-3 p-md-4 border-0 shadow bg-primary bg-opacity-10">
             <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-info-circle me-2"></i>Information</h5>
             <ul class="list-unstyled small">
-                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> Your request will be reviewed by HOD first</li>
-                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> HOD will forward to Principal for final approval</li>
-                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> You'll receive email notifications at each step</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> Your request will be reviewed by
+                    HOD first</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> HOD will forward to Principal for
+                    final approval</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> You'll receive email notifications
+                    at each step</li>
                 <li><i class="bi bi-check-circle text-success me-2"></i> Status: <strong>Pending</strong></li>
             </ul>
         </div>
@@ -72,7 +80,9 @@
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <div class="mb-2">
-                                <span class="badge bg-light text-dark border me-2"><i class="bi bi-calendar-event me-1"></i> {{ req.from_date }} to {{ req.to_date }}</span>
+                                <span class="badge bg-light text-dark border me-2"><i
+                                        class="bi bi-calendar-event me-1"></i> {{ req.from_date }} to {{ req.to_date
+                                    }}</span>
                                 <span class="status-badge 
                                     {% if req.status == 'Pending' %}bg-pending
                                     {% elif req.status == 'HOD Approved' %}bg-hod-approved
