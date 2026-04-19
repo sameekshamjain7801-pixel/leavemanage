@@ -1,0 +1,205 @@
+:root {
+            --primary: #8b5cf6; /* Vibrant Purple */
+            --primary-dark: #7c3aed;
+            --secondary: #64748b;
+            --bg-body: #fdfaff; /* Light purple tint */
+            --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: #1e293b;
+        }
+        .navbar {
+            background: white;
+            border-bottom: 2px solid #f3e8ff;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .navbar-brand { font-weight: 800; font-size: 1.6rem; letter-spacing: -1px; }
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+        .btn { border-radius: 12px; font-weight: 700; padding: 0.75rem 1.5rem; transition: all 0.3s ease; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border: none; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.4); }
+        .status-badge {
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        .bg-pending { background-color: #fef9c3; color: #854d0e; }
+        .bg-hod-approved { background-color: #dcfce7; color: #166534; }
+        .bg-principal-approved { background-color: #dbeafe; color: #1e40af; }
+        .bg-rejected { background-color: #fee2e2; color: #991b1b; }
+        .login-card { max-width: 600px; margin: 3rem auto; padding: 0 1.5rem; }
+        .dashboard-header { border-bottom: 2px solid #e2e8f0; padding-bottom: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        textarea.form-control { border-radius: 12px; background-color: #f1f5f9; border: 1px solid #e2e8f0; }
+        textarea.form-control:focus { background-color: white; }
+        .request-card-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .request-card-actions .btn { padding: 0.6rem 1rem; font-size: 0.9rem; }
+        
+        /* Responsive Table */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table { margin-bottom: 0; }
+        .table th, .table td { vertical-align: middle; white-space: nowrap; }
+        
+        /* Form Responsive */
+        .form-control, .form-select { border-radius: 10px; padding: 0.65rem 0.75rem; font-size: 1rem; }
+        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25); }
+        
+        /* Modal Responsive */
+        .modal-dialog { margin: 0.5rem auto; }
+        .modal-content { margin: 0; }
+        
+        /* Card Responsive */
+        .card { margin-bottom: 1.5rem; }
+        
+        /* Container Padding */
+        .container-fluid, .container { padding-left: 0.75rem; padding-right: 0.75rem; }
+        
+        /* Navbar Responsive */
+        .navbar { padding: 0.75rem 0; }
+        .navbar-brand { margin: 0 0.5rem; }
+        
+        @media (max-width: 1200px) {
+            .container-fluid, .container { padding-left: 1rem; padding-right: 1rem; }
+            h2 { font-size: 1.75rem; }
+            h3 { font-size: 1.4rem; }
+            h4 { font-size: 1.15rem; }
+            .btn { padding: 0.65rem 1.25rem; font-size: 0.95rem; }
+            .login-card { max-width: 700px; }
+        }
+        
+        @media (min-width: 1400px) {
+            .login-card { max-width: 800px; }
+        }
+        
+        @media (max-width: 992px) {
+            .navbar-brand { font-size: 1.4rem; }
+            .login-card { max-width: 100%; margin: 2rem 1rem; }
+            .dashboard-header { flex-direction: column; align-items: flex-start !important; gap: 1rem; }
+            .card { border-radius: 15px; }
+            h2 { font-size: 1.6rem; }
+            h3 { font-size: 1.3rem; }
+            .btn-sm { padding: 0.5rem 0.85rem; font-size: 0.9rem; }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar { padding: 0.5rem 0; }
+            .navbar-brand { font-size: 1.2rem; margin: 0; }
+            .navbar-brand i { display: inline-block; }
+            .ms-auto { margin-left: auto !important; }
+            .gap-3 { gap: 0.75rem !important; }
+            .d-none.d-md-block { display: none !important; }
+            
+            .login-card { max-width: 100%; margin: 1.5rem 0.75rem; padding: 0; }
+            .login-card .card { border-radius: 12px; padding: 1.5rem !important; }
+            .login-card h2 { font-size: 1.4rem; }
+            
+            .dashboard-header { padding-bottom: 1rem; margin-bottom: 1.5rem; }
+            .dashboard-header h2 { margin-bottom: 0.5rem; font-size: 1.4rem; }
+            
+            .card { margin-bottom: 1rem; padding: 1rem !important; }
+            .card h4 { font-size: 1.1rem; }
+            
+            .btn { padding: 0.6rem 1rem; font-size: 0.9rem; }
+            .btn-sm { padding: 0.45rem 0.75rem; font-size: 0.85rem; }
+            
+            /* Table on mobile */
+            .table { font-size: 0.9rem; }
+            .table thead { font-size: 0.8rem; }
+            .table th, .table td { padding: 0.5rem 0.25rem; }
+            
+            /* Form on mobile */
+            .row { margin-right: -0.375rem; margin-left: -0.375rem; }
+            .col, [class*="col-"] { padding-right: 0.375rem; padding-left: 0.375rem; }
+            .form-control, .form-select { padding: 0.6rem 0.6rem; font-size: 0.95rem; }
+            .form-label { font-size: 0.9rem; margin-bottom: 0.35rem; }
+            
+            /* Modal on mobile */
+            .modal-dialog { margin: 0.5rem; }
+            .modal-content { border-radius: 12px; }
+            .modal-header { padding: 1rem; }
+            .modal-body { padding: 1rem; }
+            .modal-footer { padding: 1rem; gap: 0.5rem; }
+            
+            /* Input group on mobile */
+            .input-group-text { padding: 0.6rem 0.5rem; font-size: 0.9rem; }
+            
+            .container-fluid, .container { padding-left: 0.75rem; padding-right: 0.75rem; }
+            
+            /* Faculty management form */
+            .col-12 { width: 100%; }
+            .col-md-6 { width: 100%; }
+        }
+        
+        @media (max-width: 576px) {
+            .navbar-brand { font-size: 1rem; }
+            .navbar-brand i { font-size: 1.2rem; }
+            
+            .login-card { margin: 1rem 0.5rem; }
+            .login-card .card { padding: 1.25rem !important; }
+            .login-card h2 { font-size: 1.25rem; }
+            .login-card p { font-size: 0.9rem; }
+            
+            h2 { font-size: 1.3rem !important; }
+            h3 { font-size: 1.1rem !important; }
+            h4 { font-size: 1rem !important; }
+            h5 { font-size: 0.95rem !important; }
+            
+            .card { margin-bottom: 0.75rem; padding: 0.75rem !important; border-radius: 10px; }
+            .card h4 { font-size: 1rem; margin-bottom: 0.75rem; }
+            
+            .btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; border-radius: 8px; }
+            .btn-sm { padding: 0.4rem 0.65rem; font-size: 0.8rem; }
+            .btn-lg { padding: 0.75rem 1.5rem; font-size: 0.9rem; }
+            
+            /* Text sizing */
+            .small { font-size: 0.8rem; }
+            .text-muted { font-size: 0.85rem; }
+            
+            /* Table on extra small */
+            .table { font-size: 0.8rem; }
+            .table thead { font-size: 0.75rem; }
+            .table th, .table td { padding: 0.35rem 0.2rem; }
+            .table-responsive { margin: 0 -0.75rem; padding: 0 0.75rem; }
+            
+            /* Form on extra small */
+            .form-control, .form-select { padding: 0.5rem 0.5rem; font-size: 0.9rem; }
+            .form-label { font-size: 0.85rem; }
+            .mb-3 { margin-bottom: 0.75rem !important; }
+            .mb-4 { margin-bottom: 1rem !important; }
+            
+            /* Modal on extra small */
+            .modal-dialog { margin: 0.25rem; }
+            .modal-content { border-radius: 10px; }
+            .modal-header { padding: 0.75rem; }
+            .modal-body { padding: 0.75rem; }
+            .modal-footer { padding: 0.75rem; gap: 0.25rem; }
+            
+            .container-fluid, .container { padding-left: 0.5rem; padding-right: 0.5rem; }
+            
+            .py-4 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+            .py-5 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+            
+            .pt-0 { padding-top: 0 !important; }
+            .p-4 { padding: 0.75rem !important; }
+            
+            /* Gap utilities */
+            .gap-2 { gap: 0.35rem !important; }
+            .gap-3 { gap: 0.5rem !important; }
+            
+            .me-2 { margin-right: 0.35rem !important; }
+            .ms-auto { margin-left: auto !important; }
+            .me-auto { margin-right: auto !important; }
+            
+            /* Badges responsive */
+            .badge { padding: 0.35rem 0.6rem; font-size: 0.75rem; }
+        }

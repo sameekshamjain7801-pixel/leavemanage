@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mb-3 mb-md-4">
+    <h2 class="fw-bold mb-1">Submit Leave Request</h2>
+    <p class="text-muted small">Fill in the details below to submit your leave request for approval</p>
+</div>
+
+<div class="row g-2 g-md-4">
+    <div class="col-lg-8">
+        <div class="card p-3 p-md-4 border-0 shadow">
+            <form action="{{ url_for('submit_leave') }}" method="POST">
+                <div class="row g-2 g-md-3 mb-3 mb-md-4">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-bold mb-2 small">Full Name</label>
+                        <input type="text" name="student_name" class="form-control form-control-sm" value="{{ faculty_name }}" readonly required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-bold mb-2 small">Email</label>
+                        <input type="email" name="email" class="form-control form-control-sm" value="{{ faculty_email }}" readonly required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-bold mb-2 small">Department</label>
+                        <input type="text" name="department" class="form-control form-control-sm" value="{{ faculty_department }}" readonly required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-bold mb-2 small">Reason for Leave</label>
+                        <input type="text" name="reason" class="form-control form-control-sm" placeholder="Medical, Personal, Research, etc." required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-bold mb-2 small">From Date</label>
+                        <input type="date" name="from_date" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-bold mb-2 small">To Date</label>
+                        <input type="date" name="to_date" class="form-control form-control-sm" required>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 justify-content-end flex-wrap">
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">Sign Out</a>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-send-fill me-1"></i> Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card p-3 p-md-4 border-0 shadow bg-primary bg-opacity-10">
+            <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-info-circle me-2"></i>Information</h5>
+            <ul class="list-unstyled small">
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> Your request will be reviewed by HOD first</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> HOD will forward to Principal for final approval</li>
+                <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i> You'll receive email notifications at each step</li>
+                <li><i class="bi bi-check-circle text-success me-2"></i> Status: <strong>Pending</strong></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- My Requests -->
+<div class="mt-5">
+    <h3 class="fw-bold mb-3">My Leave Requests</h3>
+    {% if my_requests %}
+    <div class="row g-3">
+        {% for req in my_requests %}
+        <div class="col-12">
+            <div class="card p-0 overflow-hidden border-start border-4 
+                {% if req.status == 'Pending' %}border-warning
+                {% elif 'Approved' in req.status %}border-success
+                {% elif 'Rejected' in req.status %}border-danger
+                {% endif %}">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="mb-2">
+                                <span class="badge bg-light text-dark border me-2"><i class="bi bi-calendar-event me-1"></i> {{ req.from_date }} to {{ req.to_date }}</span>
+                                <span class="status-badge 
+                                    {% if req.status == 'Pending' %}bg-pending
+                                    {% elif req.status == 'HOD Approved' %}bg-hod-approved
+                                    {% elif req.status == 'Principal Approved' %}bg-principal-approved
+                                    {% else %}bg-rejected{% endif %}">{{ req.status }}</span>
+                            </div>
+                            <p class="mb-1"><strong>Reason:</strong> {{ req.reason }}</p>
+                            <small class="text-muted">Submitted on: {{ req.created_at }}</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if req.hod_remarks %}
+                            <div class="mb-2">
+                                <small class="text-muted"><strong>HOD Remarks:</strong></small>
+                                <p class="mb-0 text-break">{{ req.hod_remarks }}</p>
+                            </div>
+                            {% endif %}
+                            {% if req.principal_remarks and req.status != 'HOD Approved' %}
+                            <div>
+                                <small class="text-muted"><strong>Principal Remarks:</strong></small>
+                                <p class="mb-0 text-break">{{ req.principal_remarks }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 card border-0 bg-light">
+        <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+        <p class="text-muted mt-3">No leave requests submitted yet</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
