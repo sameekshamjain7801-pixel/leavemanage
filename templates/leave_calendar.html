@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mb-4 px-2 d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="fw-bold mb-0">Leave Calendar</h2>
+        <p class="text-muted small mb-0">Monthly view of faculty absence and scheduled leaves</p>
+    </div>
+</div>
+
+<div class="card p-4 border-0 shadow-sm glass-pane" style="border-radius: 24px;">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center mb-4 gap-3">
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <h4 class="fw-bold mb-0" style="min-width: 140px;">{{ current_month_str|default('April 2026') }}</h4>
+            <div class="btn-group shadow-sm">
+                <a href="{{ url_for('admin.leave_calendar', year=prev_year, month=prev_month) }}" class="btn btn-light border btn-sm px-3" title="Previous Month">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+                <a href="{{ url_for('admin.leave_calendar') }}" class="btn btn-light border btn-sm px-3 fw-bold text-muted">Today</a>
+                <a href="{{ url_for('admin.leave_calendar', year=next_year, month=next_month) }}" class="btn btn-light border btn-sm px-3" title="Next Month">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="d-flex gap-3">
+            <div class="d-flex align-items-center gap-2 small text-muted">
+                <span class="rounded-circle bg-primary" style="width: 8px; height: 8px; display: inline-block;"></span>
+                Approved
+            </div>
+            <div class="d-flex align-items-center gap-2 small text-muted">
+                <span class="rounded-circle bg-warning" style="width: 8px; height: 8px; display: inline-block;"></span>
+                Pending
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive overflow-auto pb-2" style="border-radius: 12px; cursor: grab;" onmousedown="this.style.cursor='grabbing'" onmouseup="this.style.cursor='grab'" onmouseleave="this.style.cursor='grab'">
+        <div class="calendar-grid" style="display: grid; grid-template-columns: repeat(7, minmax(130px, 1fr)); gap: 0.5rem; min-width: 900px;">
+            <!-- Headers -->
+            <div class="calendar-header text-center fw-bold text-muted small mb-2">MON</div>
+            <div class="calendar-header text-center fw-bold text-muted small mb-2">TUE</div>
+            <div class="calendar-header text-center fw-bold text-muted small mb-2">WED</div>
+            <div class="calendar-header text-center fw-bold text-muted small mb-2">THU</div>
+            <div class="calendar-header text-center fw-bold text-muted small mb-2">FRI</div>
+            <div class="calendar-header text-center fw-bold text-muted small mb-2">SAT</div>
+            <div class="calendar-header text-center fw-bold text-muted small mb-2">SUN</div>
+
+            <!-- Days -->
+            {% set weekdays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] %}
+            {% for week in month_days %}
+                {% for day in week %}
+                <div class="calendar-cell-wrapper {% if day == 0 %}empty-day{% endif %}" style="min-height: 100px;">
+                    {% if day != 0 %}
+                        {% set day_str = "%04d-%02d-%02d" % (year, month, day) %}
+                        {% set is_weekend = loop.index0 >= 5 %}
+                        
+                        {% set cell_class = "bg-light bg-opacity-30" %}
+                        {% if day_str < today_str %}
+                            {% set cell_class = "bg-secondary bg-opacity-10 text-muted opacity-75" %}
+                        {% elif day_str == today_str %}
+                            {% set cell_class = "bg-primary bg-opacity-10 border-primary border-2 shadow-sm" %}
+                        {% elif day_str == tomorrow_str %}
+                            {% set cell_class = "bg-info bg-opacity-10 border-info border-2 shadow-sm" %}
+                        {% elif is_weekend %}
+                            {% set cell_class = "bg-secondary bg-opacity-10 border-opacity-50" %}
+                        {% endif %}
+                        
+                        <div class="day-cell h-100 p-2 rounded-4 border {{ cell_class }} position-relative d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div>
+                                    <span class="mobile-day-label d-md-none text-muted small fw-bold me-1">{{ weekdays[loop.index0] }}</span>
+                                    <span class="small fw-bold {% if is_weekend and day_str >= today_str %}text-danger opacity-75{% endif %}" style="font-size: 1.1rem;">{{ day }}</span>
+                                </div>
+                                {% if day_str == today_str %}
+                                    <span class="badge bg-primary rounded-pill" style="font-size: 0.55rem;">Today</span>
+                                {% elif day_str == tomorrow_str %}
+                                    <span class="badge bg-info rounded-pill" style="font-size: 0.55rem;">Tmrw</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="events-wrapper mt-1 pe-1 overflow-y-auto" style="max-height: 110px;">
+                                <div class="d-flex flex-column gap-1">
+                                    {% for leave in leaves %}
+                                        {% if leave.from_date == day_str or (leave.from_date <= day_str and leave.to_date >= day_str) %}
+                                        <div class="w-100 text-start overflow-hidden shadow-sm border"
+                                            style="padding: 0.35rem; cursor: pointer; line-height: 1.2; background: var(--bg-card); color: var(--text-color); border-radius: 6px; border-color: var(--border-color) !important;"
+                                            title="{{ leave.type }} Leave: {{ leave.name }} ({{ leave.department }}) from {{ leave.from_date }} to {{ leave.to_date }}"
+                                            data-bs-toggle="modal" data-bs-target="#leaveDetailModal"
+                                            data-name="{{ leave.name }}"
+                                            data-dept="{{ leave.department }}"
+                                            data-from="{{ leave.from_date }}"
+                                            data-to="{{ leave.to_date }}"
+                                            data-type="{{ leave.type }}"
+                                            data-status="{{ leave.status }}"
+                                            data-reason="{{ leave.reason|e }}">
+                                            
+                                            <div class="d-flex align-items-center gap-1 mb-1">
+                                                <span class="rounded-circle {% if leave.type == 'Approved' %}bg-primary{% else %}bg-warning{% endif %}" 
+                                                      style="width: 6px; height: 6px; flex-shrink: 0; box-shadow: 0 0 4px {% if leave.type == 'Approved' %}rgba(99,102,241,0.5){% else %}rgba(245,158,11,0.5){% endif %};"></span>
+                                                <span class="fw-bold text-truncate" style="font-size: 0.7rem;">{{ leave.name }}</span>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="text-muted text-truncate" style="font-size: 0.6rem;">{{ leave.department }}</div>
+                                                <div class="text-muted fw-medium" style="font-size: 0.55rem;">
+                                                    {{ leave.from_date[-5:] }} : {{ leave.to_date[-5:] }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="h-100 p-2 rounded-4 border-0 bg-transparent"></div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .day-cell {
+        transition: all 0.2s ease;
+    }
+
+    .day-cell:hover {
+        background: white !important;
+        border-color: var(--primary) !important;
+        transform: scale(1.02);
+        z-index: 5;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .mobile-day-label {
+        display: none;
+    }
+</style>
+
+<!-- Leave Detail Modal -->
+<div class="modal fade" id="leaveDetailModal" tabindex="-1" aria-labelledby="leaveDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                <div class="d-flex align-items-center gap-2">
+                    <div id="modalLeaveIcon" class="rounded-circle d-flex align-items-center justify-content-center" style="width:40px; height:40px; background:rgba(99,102,241,0.12);">
+                        <i class="bi bi-calendar-check-fill text-primary" style="font-size: 1.2rem;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0" id="leaveDetailModalLabel">Leave Details</h5>
+                        <span class="badge" id="modalLeaveStatus" style="font-size: 0.75rem;"></span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 pt-4">
+                <div class="mb-3 p-3 rounded" style="background: var(--bg-body);">
+                    <h6 class="fw-bold mb-1" id="modalLeaveName"></h6>
+                    <div class="text-muted small" id="modalLeaveDept"></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="text-muted small fw-bold mb-1"><i class="bi bi-calendar-minus me-1"></i>From Date</div>
+                        <div class="fw-medium" id="modalLeaveFrom"></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small fw-bold mb-1"><i class="bi bi-calendar-plus me-1"></i>To Date</div>
+                        <div class="fw-medium" id="modalLeaveTo"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold mb-1"><i class="bi bi-card-text me-1"></i>Reason</div>
+                    <div class="p-3 border rounded shadow-sm" style="font-size: 0.9rem; background: var(--bg-card); color: var(--text-color);" id="modalLeaveReason"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 px-4 pb-4">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const leaveModal = document.getElementById('leaveDetailModal');
+        if(leaveModal) {
+            leaveModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const name = button.getAttribute('data-name');
+                const dept = button.getAttribute('data-dept');
+                const from = button.getAttribute('data-from');
+                const to = button.getAttribute('data-to');
+                const type = button.getAttribute('data-type');
+                const status = button.getAttribute('data-status');
+                const reason = button.getAttribute('data-reason');
+
+                leaveModal.querySelector('#modalLeaveName').textContent = name;
+                leaveModal.querySelector('#modalLeaveDept').textContent = dept;
+                leaveModal.querySelector('#modalLeaveFrom').textContent = from;
+                leaveModal.querySelector('#modalLeaveTo').textContent = to;
+                leaveModal.querySelector('#modalLeaveReason').textContent = reason;
+                
+                const statusBadge = leaveModal.querySelector('#modalLeaveStatus');
+                statusBadge.textContent = status;
+                
+                if (type === 'Approved') {
+                    statusBadge.className = 'badge bg-success';
+                } else if (type === 'Pending') {
+                    statusBadge.className = 'badge bg-warning text-dark';
+                } else {
+                    statusBadge.className = 'badge bg-secondary';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+{% block title_header %}
+    {% if view == 'pending' %}Pending Requests
+    {% elif view == 'history' %}Leave History
+    {% else %}Dashboard
+    {% endif %}
+{% endblock %}
+{% block content %}
+<!-- Header Section -->
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mb-1">
+            <li class="breadcrumb-item active text-capitalize">{{ session['role'] }} Portal</li>
+        </ol>
+    </nav>
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="fw-bold mb-0">
+            {% if view == 'pending' %}Pending Requests
+            {% elif view == 'history' %}Leave History Archive
+            {% else %}Institutional Dashboard
+            {% endif %}
+        </h2>
+    </div>
+</div>
+
+<div class="dashboard-wrapper">
+    <!-- Statistics Row -->
+    {% set pending_count = requests|length %}
+    {% set approved_count = history_requests | selectattr('status', 'equalto', 'Principal Approved') | list | length %}
+    {% set rejected_count = history_requests | selectattr('status', 'equalto', 'Rejected') | list | length %}
+    {% set total_requests = pending_count + approved_count + rejected_count %}
+
+    {% if view == 'dashboard' %}
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card p-3 d-flex flex-row align-items-center gap-3">
+                <div class="stat-icon-circle">
+                    <i class="bi bi-stack"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold">Total</div>
+                    <div class="h4 fw-bold mb-0">{{ total_requests }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 d-flex flex-row align-items-center gap-3">
+                <div class="stat-icon-circle" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24;">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold">Pending</div>
+                    <div class="h4 fw-bold mb-0">{{ pending_count }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 d-flex flex-row align-items-center gap-3">
+                <div class="stat-icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #34d399;">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold">Approved</div>
+                    <div class="h4 fw-bold mb-0">{{ approved_count }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 d-flex flex-row align-items-center gap-3">
+                <div class="stat-icon-circle" style="background: rgba(239, 68, 68, 0.1); color: #f87171;">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold">Rejected</div>
+                    <div class="h4 fw-bold mb-0">{{ rejected_count }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if session.get('role') == 'faculty' %}
+    <!-- Faculty Split Layout -->
+    <div class="row g-4">
+        <!-- Apply for Leave Form -->
+        <div class="col-lg-4">
+            <div class="card p-4">
+                <h5 class="fw-bold mb-4">Apply for Leave</h5>
+                <form action="{{ url_for('faculty.submit_leave') }}" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Reason</label>
+                        <select name="reason" class="form-select" required>
+                            <option value="" selected disabled>Select reason</option>
+                            <option value="Personal Work">Personal Work</option>
+                            <option value="Medical">Medical</option>
+                            <option value="Conference">Conference</option>
+                            <option value="Family Function">Family Function</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">From Date</label>
+                        <input type="date" name="from_date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">To Date</label>
+                        <input type="date" name="to_date" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mt-2">Submit Request</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- My Leave Requests Table -->
+        <div class="col-lg-8">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">My Leave Requests</h5>
+                    <a href="#" class="text-primary small fw-bold text-decoration-none">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Reason</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in history_requests[:5] %}
+                            <tr>
+                                <td class="fw-bold">{{ loop.index }}</td>
+                                <td>{{ req.reason }}</td>
+                                <td>{{ req.from_date }}</td>
+                                <td>{{ req.to_date }}</td>
+                                <td>
+                                    <span class="status-badge 
+                                        {% if req.status == 'Pending' %}bg-pending
+                                        {% elif req.status == 'HOD Approved' %}bg-hod-approved
+                                        {% elif req.status == 'Principal Approved' %}bg-principal-approved
+                                        {% else %}bg-rejected{% endif %}">
+                                        {{ req.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="modal" data-bs-target="#viewLeaveModal" data-name="{{ session.get('name') or req.student_name }}" data-reason="{{ req.reason }}" data-from="{{ req.from_date }}" data-to="{{ req.to_date }}" data-ftime="{{ req.from_time }}" data-ttime="{{ req.to_time }}" data-status="{{ req.status }}"><i class="bi bi-eye"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not history_requests %}
+                            <tr><td colspan="6" class="text-center py-4 text-muted small">No requests found</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Admin Visual Analytics -->
+    <div class="row g-4 mb-4" id="analytics-section">
+        <div class="col-12">
+            <div class="card p-4 border-0 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1">Monthly Leave Trends</h5>
+                        <p class="text-muted small mb-0">Overview of leave requests and approvals</p>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown">
+                            Last 6 Months
+                        </button>
+                        <ul class="dropdown-menu border-0 shadow-sm">
+                            <li><a class="dropdown-item" href="#">Last 6 Months</a></li>
+                            <li><a class="dropdown-item" href="#">Last Year</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="height: 320px;">
+                    <canvas id="leaveTrendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard (HOD/Principal) - Main Content -->
+    <div class="row g-4 mb-4" id="pending-section">
+        <!-- Pending Requests -->
+        <div class="col-lg-8">
+            <div class="card p-4">
+                <h5 class="fw-bold mb-4">Pending Leave Requests</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Faculty</th>
+                                <th>Reason</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in requests %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td class="fw-bold">{{ req.student_name }}</td>
+                                <td>{{ req.reason }}</td>
+                                 <td>{{ req.from_date }}</td>
+                                <td>
+                                    {{ req.to_date }}
+                                    {% if req.from_time or req.to_time %}
+                                    <div class="smallest text-primary fw-bold mt-1">
+                                        <i class="bi bi-clock me-1"></i>{{ req.from_time }} - {{ req.to_time }}
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        {% if session.get('role') != 'principal' %}
+                                        <form action="{{ url_for('dashboard.process_leave') }}" method="POST" class="d-inline">
+                                            <input type="hidden" name="id" value="{{ req.id }}">
+                                            <div class="d-flex gap-1">
+                                                <button type="submit" name="action" value="approve" class="btn btn-success btn-sm p-1 px-2" title="Approve"><i class="bi bi-check"></i></button>
+                                                <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm p-1 px-2" title="Reject"><i class="bi bi-x"></i></button>
+                                            </div>
+                                        </form>
+                                        {% else %}
+                                        <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="modal" data-bs-target="#viewLeaveModal" data-name="{{ req.student_name }}" data-reason="{{ req.reason }}" data-from="{{ req.from_date }}" data-to="{{ req.to_date }}" data-ftime="{{ req.from_time }}" data-ttime="{{ req.to_time }}" data-status="{{ req.status }}"><i class="bi bi-eye"></i></button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not requests %}
+                            <tr><td colspan="6" class="text-center py-4 text-muted small">No pending requests</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-lg-4">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Recent Activity</h5>
+                </div>
+                <div class="activity-list">
+                    {% for req in history_requests[:5] %}
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom last-child-mb-0 border-0">
+                        <div class="bg-light rounded-circle p-2" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-person text-muted"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="small fw-bold">{{ req.student_name }}</div>
+                            <div class="text-muted smallest">
+                                Leave {{ req.status|lower }}
+                                {% if req.from_time %} ({{ req.from_time }}){% endif %}
+                            </div>
+                            <div class="text-muted smallest">{{ req.from_date }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave History -->
+    <div class="row g-4 mt-2" id="history-section">
+        <div class="col-12">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Leave History</h5>
+                    <form action="{{ url_for('dashboard.clear_history') }}" method="POST">
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                            <i class="bi bi-trash me-1"></i>Clear View
+                        </button>
+                    </form>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Faculty</th>
+                                <th>Reason</th>
+                                <th>Dates & Time</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in history_requests %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td class="fw-bold">{{ req.student_name }}</td>
+                                <td>{{ req.reason }}</td>
+                                <td>
+                                    <div>{{ req.from_date }} to {{ req.to_date }}</div>
+                                    {% if req.from_time %}
+                                    <small class="text-primary fw-bold"><i class="bi bi-clock me-1"></i>{{ req.from_time }} - {{ req.to_time }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="status-badge 
+                                        {% if req.status == 'Principal Approved' %}bg-success text-white
+                                        {% elif req.status == 'HOD Approved' %}bg-info text-white
+                                        {% else %}bg-danger text-white{% endif %}">
+                                        {{ req.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="modal" data-bs-target="#viewLeaveModal" data-name="{{ req.student_name }}" data-reason="{{ req.reason }}" data-from="{{ req.from_date }}" data-to="{{ req.to_date }}" data-ftime="{{ req.from_time }}" data-ttime="{{ req.to_time }}" data-status="{{ req.status }}"><i class="bi bi-eye"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not history_requests %}
+                            <tr><td colspan="6" class="text-center py-4 text-muted small">No history found</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% include 'modals/dashboard_modals.html' ignore missing %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('leaveTrendsChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: {{ chart_data.labels|tojson if chart_data else ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']|tojson }},
+                    datasets: [{
+                        label: 'Approved Leaves',
+                        data: {{ chart_data.approved|tojson if chart_data else [0,0,0,0,0,0]|tojson }},
+                        backgroundColor: '#6366f1',
+                        borderRadius: 10,
+                    }, {
+                        label: 'Pending Requests',
+                        data: {{ chart_data.pending|tojson if chart_data else [0,0,0,0,0,0]|tojson }},
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: 10,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, padding: 20 }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

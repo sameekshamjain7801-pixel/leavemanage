@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- Breadcrumbs -->
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mb-1">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.dashboard') }}"
+                    class="text-decoration-none">Dashboard</a></li>
+            <li class="breadcrumb-item active">Faculty Management</li>
+        </ol>
+    </nav>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-0">Faculty Management</h2>
+            <p class="text-muted small mb-0">Manage institutional credentials and leave quotas</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 justify-content-center">
+    <div class="col-xl-11 col-xxl-10">
+        <div class="row g-4">
+
+            {% if session['role'] in ['hod1', 'hod2', 'principal'] %}
+            <!-- Add Faculty Form -->
+            <div class="col-12">
+                <div class="card p-4 border-0 shadow-sm glass-pane" style="border-radius: 20px;">
+                    <div class="d-flex align-items-center gap-2 mb-4">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width:36px;height:36px;background:rgba(99,102,241,0.1);color:#6366f1;">
+                            <i class="bi bi-person-plus-fill"></i>
+                        </div>
+                        <h5 class="fw-bold mb-0">Register New Faculty</h5>
+                    </div>
+                    
+                    <form action="{{ url_for('admin.create_faculty') }}" method="POST">
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted" style="letter-spacing: 0.05em;">FACULTY ID</label>
+                                <input type="text" name="faculty_id" class="form-control bg-light border-0" placeholder="e.g. faculty6" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted" style="letter-spacing: 0.05em;">FULL NAME</label>
+                                <input type="text" name="name" class="form-control bg-light border-0" placeholder="Dr. John Smith" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted" style="letter-spacing: 0.05em;">EMAIL ADDRESS</label>
+                                <input type="email" name="email" class="form-control bg-light border-0" placeholder="faculty@college.edu" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted" style="letter-spacing: 0.05em;">DEPARTMENT</label>
+                                <select name="department" class="form-select bg-light border-0" required>
+                                    <option value="" disabled selected>Select</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Information Technology">IT</option>
+                                    <option value="Electronics & Communication">E&C</option>
+                                    <option value="Electrical Engineering">Electrical</option>
+                                    <option value="Mechanical Engineering">Mechanical</option>
+                                    <option value="Civil Engineering">Civil</option>
+                                    <option value="BCA">BCA</option>
+                                    <option value="B.Com">B.Com</option>
+                                    <option value="Mathematics">Mathematics</option>
+                                    <option value="Physics">Physics</option>
+                                    <option value="Chemistry">Chemistry</option>
+                                    <option value="English">English</option>
+                                    <option value="Management Studies">Management</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted" style="letter-spacing: 0.05em;">PASSWORD</label>
+                                <input type="password" name="password" class="form-control bg-light border-0" placeholder="Min 6 chars" required minlength="6">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted" style="letter-spacing: 0.05em;">LEAVE QUOTA</label>
+                                <input type="number" name="leave_quota" class="form-control bg-light border-0" value="20" min="1" required>
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-end pt-3 border-top border-opacity-10">
+                            <button type="submit" class="btn btn-primary px-4 rounded-pill" style="font-weight: 600;">
+                                <i class="bi bi-check2-circle me-1"></i> Register Faculty
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Registered Faculty Table -->
+            <div class="col-12">
+                <div class="card p-4 border-0 shadow-sm glass-pane" style="border-radius: 20px;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                 style="width:36px;height:36px;background:rgba(99,102,241,0.1);color:#6366f1;">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                            <h5 class="fw-bold mb-0">Registered Faculty</h5>
+                        </div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill small px-3 py-2">{{ faculty_list|length }} Members</span>
+                    </div>
+
+                    {% if faculty_list %}
+                    <div class="table-responsive border" style="border-radius: 16px;">
+                        <table class="table table-hover mb-0 text-nowrap align-middle">
+                            <thead class="bg-light">
+                                <tr class="small text-muted">
+                                    <th class="px-3 py-3 border-0">IDENTIFIER</th>
+                                    <th class="px-3 py-3 border-0">NAME & CONTACT</th>
+                                    <th class="px-3 py-3 border-0">DEPARTMENT</th>
+                                    <th class="px-3 py-3 border-0 text-center">QUOTA</th>
+                                    <th class="px-3 py-3 border-0 text-center">STATUS</th>
+                                    {% if session['role'] != 'faculty' %}
+                                    <th class="px-3 py-3 border-0 text-center" style="min-width: 140px;">ACTIONS</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fac in faculty_list %}
+                                <tr>
+                                    <td class="px-3 py-3 fw-bold text-primary">{{ fac.faculty_id }}</td>
+                                    <td class="px-3 py-3">
+                                        <div class="fw-bold text-dark">{{ fac.name }}</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">{{ fac.email }}</div>
+                                    </td>
+                                    <td class="px-3 py-3">
+                                        <span class="badge bg-light text-secondary border fw-normal">{{ fac.department }}</span>
+                                    </td>
+                                    <td class="px-3 py-3 text-center">
+                                        <div class="fw-bold">{{ fac.leave_quota or 20 }}</div>
+                                        <div class="text-muted" style="font-size: 0.65rem;">Days/Year</div>
+                                    </td>
+                                    <td class="px-3 py-3 text-center">
+                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 border-success border-opacity-25" style="font-size: 0.7rem;">
+                                            <i class="bi bi-circle-fill me-1" style="font-size: 0.4rem;"></i> Active
+                                        </span>
+                                    </td>
+                                    {% if session['role'] != 'faculty' %}
+                                    <td class="px-3 py-3 text-center">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <a href="{{ url_for('admin.faculty_profile', identifier=fac.faculty_id) }}"
+                                                class="btn btn-sm btn-light rounded-circle shadow-sm border"
+                                                title="View Profile">
+                                                <i class="bi bi-eye text-info"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-light rounded-circle shadow-sm border"
+                                                data-bs-toggle="modal" data-bs-target="#editFacultyModal"
+                                                onclick="fillEditFacultyModal('{{ fac.faculty_id }}', '{{ fac.name }}', '{{ fac.email }}', '{{ fac.department }}', {{ fac.leave_quota or 20 }})"
+                                                title="Edit Faculty">
+                                                <i class="bi bi-pencil text-primary"></i>
+                                            </button>
+                                            <a href="{{ url_for('admin.delete_faculty', faculty_id=fac.faculty_id) }}"
+                                                class="btn btn-sm btn-light rounded-circle shadow-sm border"
+                                                onclick="return confirm('Permanently remove this faculty member?');"
+                                                title="Delete Account">
+                                                <i class="bi bi-trash text-danger"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-person-x text-muted opacity-25" style="font-size: 4rem;"></i>
+                        <h5 class="text-muted mt-3 fw-bold">No Records Found</h5>
+                        <p class="text-secondary small">Add faculty members above to begin management.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% if session['role'] != 'faculty' %}
+<!-- Edit Faculty Modal -->
+<div class="modal fade" id="editFacultyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
+            <div class="modal-header border-0 px-4 pt-4">
+                <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.update_faculty') }}" method="POST">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="faculty_id" id="edit_faculty_id_hidden">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small">FULL NAME</label>
+                            <input type="text" name="name" id="edit_faculty_name" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small">EMAIL ADDRESS</label>
+                            <input type="email" name="email" id="edit_faculty_email" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small">DEPARTMENT</label>
+                            <select name="department" id="edit_faculty_dept" class="form-select" required>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Electronics & Communication">Electronics & Communication</option>
+                                <option value="Electrical Engineering">Electrical Engineering</option>
+                                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                <option value="Civil Engineering">Civil Engineering</option>
+                                <option value="BCA">BCA</option>
+                                <option value="B.Com">B.Com</option>
+                                <option value="Mathematics">Mathematics</option>
+                                <option value="Physics">Physics</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="English">English</option>
+                                <option value="Management Studies">Management Studies</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small">ANNUAL QUOTA (DAYS)</label>
+                            <input type="number" name="leave_quota" id="edit_faculty_quota" class="form-control" required min="1">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold border" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function fillEditFacultyModal(faculty_id, name, email, dept, quota) {
+        document.getElementById('edit_faculty_id_hidden').value = faculty_id;
+        document.getElementById('edit_faculty_name').value = name;
+        document.getElementById('edit_faculty_email').value = email;
+        document.getElementById('edit_faculty_dept').value = dept;
+        document.getElementById('edit_faculty_quota').value = quota || 20;
+    }
+</script>
+{% endif %}
+{% endblock %}

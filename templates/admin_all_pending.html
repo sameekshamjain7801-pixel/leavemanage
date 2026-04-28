@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title_header %}Pending Leave Requests{% endblock %}
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-center animate-fade-up">
+    <div>
+        <h2 class="fw-bold mb-1">Active Leave Requests</h2>
+        <p class="text-muted small">Review and process all pending leave applications from faculty members</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary rounded-pill px-4 shadow-sm small">
+            <i class="bi bi-grid me-2"></i>Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm animate-fade-up" style="border-radius: 24px;">
+    <div class="card-body p-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr class="text-secondary small">
+                        <th class="border-0 px-3">#</th>
+                        <th class="border-0">FACULTY MEMBER</th>
+                        <th class="border-0">REASON</th>
+                        <th class="border-0">DATES & TIME</th>
+                        <th class="border-0">DEPARTMENT</th>
+                        <th class="border-0">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in pending_requests %}
+                    <tr class="border-bottom-light">
+                        <td class="px-3 text-muted small">{{ loop.index }}</td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ req.student_name }}</div>
+                            <div class="smallest text-muted">{{ req.email }}</div>
+                        </td>
+                        <td class="small">{{ req.reason }}</td>
+                        <td>
+                            <div class="small fw-bold">{{ req.from_date }}</div>
+                            <div class="smallest text-muted">to {{ req.to_date }}</div>
+                            {% if req.from_time %}
+                            <div class="smallest text-primary fw-bold mt-1">
+                                <i class="bi bi-clock me-1"></i>{{ req.from_time }} - {{ req.to_time }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border-0 rounded-pill px-3">{{ req.department }}</span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                {% if session.get('role') != 'principal' %}
+                                <form action="{{ url_for('dashboard.process_leave') }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="id" value="{{ req.id }}">
+                                    <div class="d-flex gap-1">
+                                        <button type="submit" name="action" value="approve" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm" title="Approve">
+                                            <i class="bi bi-check-circle me-1"></i>Approve
+                                        </button>
+                                        <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm" title="Reject">
+                                            <i class="bi bi-x-circle me-1"></i>Reject
+                                        </button>
+                                    </div>
+                                </form>
+                                {% else %}
+                                <span class="badge bg-light text-muted border px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-eye me-1"></i>Read Only</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not pending_requests %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="mb-3"><i class="bi bi-check2-all text-muted opacity-25" style="font-size: 4rem;"></i></div>
+                            <h5 class="text-muted">No pending requests</h5>
+                            <p class="small text-muted">You're all caught up! All submitted leaves have been processed.</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

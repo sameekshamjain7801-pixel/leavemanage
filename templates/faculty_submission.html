@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+{% block title_header %}Faculty Portal{% endblock %}
+{% block content %}
+<div class="mb-3 mb-md-4 px-2">
+    <h2 class="fw-bold mb-1">Submit Leave Request</h2>
+    <p class="text-muted small">Fill in the details below to submit your leave request for approval</p>
+</div>
+
+<div class="row g-4">
+    <!-- Balance Overview Cards -->
+    {% if balance_info is defined %}
+    <div class="col-12 mb-2 animate-fade-up">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="stat-card p-3 d-flex align-items-center gap-3">
+                    <div class="stat-icon-circle">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <div>
+                        <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.6rem;">Available Quota
+                        </div>
+                        <div class="h5 fw-bold mb-0">{{ balance_info.available }} Days</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card p-3 d-flex align-items-center gap-3">
+                    <div class="stat-icon-circle" style="background: rgba(16, 185, 129, 0.1); color: #34d399;">
+                        <i class="bi bi-clipboard-check"></i>
+                    </div>
+                    <div>
+                        <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.6rem;">Consumed Leaves
+                        </div>
+                        <div class="h5 fw-bold mb-0 text-success">{{ balance_info.used }} Days</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card p-3 border-0 shadow-sm d-flex align-items-center gap-3">
+                    <div class="stat-icon-circle bg-info bg-opacity-10 text-info">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <div>
+                        <div class="small text-muted fw-bold text-uppercase" style="font-size: 0.6rem;">Account Status
+                        </div>
+                        <div class="h5 fw-bold mb-0 text-info">Active Member</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Column: Submission Form -->
+    <div class="col-12 animate-fade-up">
+        <div class="card p-4 border-0 shadow-sm mb-4" style="border-radius: 24px;">
+            <h6 class="fw-bold mb-4 text-primary text-uppercase small"><i class="bi bi-pencil-square me-2"></i>New Leave
+                Request</h6>
+            <form action="{{ url_for('faculty.submit_leave') }}" method="POST">
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-secondary small">FACULTY NAME</label>
+                        <input type="text" name="student_name" class="form-control" value="{{ faculty_name }}" readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-secondary small">DEPARTMENT</label>
+                        <input type="text" name="department" class="form-control" value="{{ faculty_department }}"
+                            readonly>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-secondary small">EMAIL ADDRESS</label>
+                        <input type="email" name="email" class="form-control" value="{{ faculty_email }}" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary small">LEAVE TYPE</label>
+                        <select name="leave_type" id="leave_type" class="form-select shadow-sm" required>
+                            <option value="full_day" selected>Full Day Leave</option>
+                            <option value="half_day">Half Day / Short Leave</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary small">REASON FOR ABSENCE</label>
+                        <input type="text" name="reason" class="form-control shadow-sm"
+                            placeholder="e.g., Medical Emergency, Research Seminar" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary small">FROM DATE</label>
+                        <input type="date" name="from_date" class="form-control shadow-sm" min="{{ today_date }}"
+                            required>
+                    </div>
+                    <div class="col-md-6" id="to_date_section">
+                        <label class="form-label fw-bold text-secondary small">TO DATE</label>
+                        <input type="date" name="to_date" class="form-control shadow-sm" min="{{ today_date }}"
+                            required>
+                    </div>
+                    <div class="col-md-3" id="half_day_from_time_section" style="display:none;">
+                        <label class="form-label fw-bold text-secondary small">FROM TIME</label>
+                        <input type="time" name="from_time" class="form-control shadow-sm">
+                    </div>
+                    <div class="col-md-3" id="half_day_to_time_section" style="display:none;">
+                        <label class="form-label fw-bold text-secondary small">TO TIME</label>
+                        <input type="time" name="to_time" class="form-control shadow-sm">
+                    </div>
+                </div>
+                <div class="d-flex gap-3 justify-content-between align-items-center pt-4 border-top">
+                    <div id="leave-duration" class="fw-bold small px-4 py-2 bg-light rounded-pill border text-muted">
+                        Calculating duration...
+                    </div>
+                    <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 shadow-sm fw-bold">
+                        <i class="bi bi-send-check me-2"></i>Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Guidelines -->
+<div class="row mt-2 animate-fade-up" style="animation-delay: 0.1s;">
+    <div class="col-12">
+        <div class="card p-4">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <h6 class="fw-bold text-primary mb-0 text-uppercase small"><i
+                            class="bi bi-info-circle-fill me-2"></i>Guidelines</h6>
+                </div>
+                <div class="col-md-9">
+                    <div class="d-flex flex-wrap gap-4">
+                        <div class="d-flex align-items-center gap-2 small text-muted">
+                            <i class="bi bi-shield-check text-primary"></i> Multi-level HOD/Principal Approval
+                        </div>
+                        <div class="d-flex align-items-center gap-2 small text-muted">
+                            <i class="bi bi-envelope-at text-primary"></i> Instant Email Notifications
+                        </div>
+                        <div class="d-flex align-items-center gap-2 small text-muted">
+                            <i class="bi bi-clock-history text-primary"></i> Real-time Status Tracking
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- My Requests -->
+<div class="mt-5" id="request-list-section">
+    <ul class="nav nav-pills mb-4" id="pills-tab-fac" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill px-4 me-2 fw-bold" id="pills-active-tab" data-bs-toggle="pill"
+                data-bs-target="#pending" type="button" role="tab">Active Approvals</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 fw-bold text-secondary bg-light" id="pills-history-tab"
+                data-bs-toggle="pill" data-bs-target="#history" type="button" role="tab">Past History</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="pills-tabContentFac">
+        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+            {% if my_requests %}
+            <div class="row g-3">
+                {% for req in my_requests %}
+                <div class="col-12">
+                    <div class="card p-0 overflow-hidden border-start border-4 border-warning">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="mb-2">
+                                        <span class="badge bg-light text-dark border me-2"><i
+                                                class="bi bi-calendar-event me-1"></i> {{ req.from_date }} to {{
+                                            req.to_date }}</span>
+                                        <span class="status-badge bg-pending">{{ req.status }}</span>
+                                    </div>
+                                    <p class="mb-1"><strong>Reason:</strong> {{ req.reason }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5 card border-0 border-light shadow-sm bg-white" style="border-radius: 20px;">
+                <i class="bi bi-hourglass text-muted opacity-25" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-3 fw-bold">No active requests</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="tab-pane fade" id="history" role="tabpanel">
+            {% if history_requests is defined and history_requests %}
+            <div class="row g-3">
+                {% for req in history_requests %}
+                <div class="col-12">
+                    <div
+                        class="card p-0 overflow-hidden border-start border-4 {% if 'Approved' in req.status %}border-success{% else %}border-danger{% endif %}">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="mb-2">
+                                        <span class="badge bg-light text-dark border me-2"><i
+                                                class="bi bi-calendar-event me-1"></i> {{ req.from_date }} to {{
+                                            req.to_date }}</span>
+                                        <span
+                                            class="status-badge {% if 'Approved' in req.status %}bg-success text-white{% else %}bg-danger text-white{% endif %}">{{
+                                            req.status }}</span>
+                                    </div>
+                                    <p class="mb-1"><strong>Reason:</strong> {{ req.reason }}</p>
+                                </div>
+                                <div class="col-md-4 text-end bg-light p-2 rounded">
+                                    {% if req.hod_remarks %}<small class="text-muted d-block">HOD: {{ req.hod_remarks
+                                        }}</small>{% endif %}
+                                    {% if req.principal_remarks %}<small class="text-muted d-block">Principal: {{
+                                        req.principal_remarks }}</small>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5 card border-0 bg-white border-light shadow-sm" style="border-radius: 20px;">
+                <i class="bi bi-archive text-muted opacity-25" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-3 fw-bold">No history available</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Change Password Modal (Simple) -->
+{% include 'modals/dashboard_modals.html' ignore missing %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const leaveTypeSelect = document.getElementById('leave_type');
+        const fromDate = document.querySelector('input[name="from_date"]');
+        const toDate = document.querySelector('input[name="to_date"]');
+        const fromTime = document.querySelector('input[name="from_time"]');
+        const toTime = document.querySelector('input[name="to_time"]');
+        const durationSpan = document.getElementById('leave-duration');
+        const halfDayFromTimeSection = document.getElementById('half_day_from_time_section');
+        const halfDayToTimeSection = document.getElementById('half_day_to_time_section');
+        const toDateContainer = document.getElementById('to_date_section');
+
+        function calculateDays() {
+            if (leaveTypeSelect.value === 'half_day') {
+                toDate.value = fromDate.value;
+                durationSpan.innerHTML = "<i class='bi bi-clock me-1'></i> Half Day Request";
+                durationSpan.className = "fw-bold small px-4 py-2 rounded-pill border text-primary bg-primary bg-opacity-10";
+            } else if (fromDate.value && toDate.value) {
+                const fd = new Date(fromDate.value);
+                const td = new Date(toDate.value);
+                const diffTime = Math.abs(td - fd);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                durationSpan.innerHTML = `<i class='bi bi-calendar3 me-1'></i> Total Duration: ${diffDays} Day(s)`;
+                durationSpan.className = "fw-bold small px-4 py-2 rounded-pill border text-success bg-success bg-opacity-10";
+            }
+        }
+
+        leaveTypeSelect.addEventListener('change', () => {
+            if (leaveTypeSelect.value === 'half_day') {
+                halfDayFromTimeSection.style.display = 'block';
+                halfDayToTimeSection.style.display = 'block';
+                toDateContainer.style.display = 'none';
+                toDate.removeAttribute('required');
+                fromTime.setAttribute('required', 'required');
+                toTime.setAttribute('required', 'required');
+            } else {
+                halfDayFromTimeSection.style.display = 'none';
+                halfDayToTimeSection.style.display = 'none';
+                toDateContainer.style.display = 'block';
+                toDate.setAttribute('required', 'required');
+                fromTime.removeAttribute('required');
+                toTime.removeAttribute('required');
+            }
+            calculateDays();
+        });
+
+        fromDate.addEventListener('change', () => {
+            // Ensure to_date cannot be earlier than from_date
+            if (fromDate.value) {
+                toDate.min = fromDate.value;
+                if (toDate.value && toDate.value < fromDate.value) {
+                    toDate.value = fromDate.value;
+                }
+            }
+            calculateDays();
+        });
+
+        toDate.addEventListener('change', calculateDays);
+
+        calculateDays();
+    });
+</script>
+{% endblock %}

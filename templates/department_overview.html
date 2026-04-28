@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mb-4 px-2">
+    <h2 class="fw-bold mb-0">Departmental Analytics</h2>
+    <p class="text-muted small mb-0">Overview of leave trends across various departments</p>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Department Distribution -->
+    <div class="col-xl-8 animate-fade-up">
+        <div class="stat-card glass-pane border-0 shadow-sm p-4" style="border-radius: 24px;">
+            <h5 class="fw-bold mb-4">Leave Volume by Department</h5>
+            <div class="activity-list">
+                {% if depts %}
+                {% set max_count = depts[0].count if depts else 1 %}
+                {% for dept in depts %}
+                <div class="mb-4 last-child-mb-0">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold small">{{ dept.name }}</span>
+                        <span class="badge bg-light text-dark border small">{{ dept.count }} Total Requests</span>
+                    </div>
+                    <div class="progress rounded-pill" style="height: 10px; background: rgba(0,0,0,0.03);">
+                        <div class="progress-bar rounded-pill shadow-sm" role="progressbar"
+                            style="width: {{ (dept.count / max_count * 100)|round }}%; background: {{ dept.color }}; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);">
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-bar-chart text-muted opacity-25" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-3 fw-bold">No departmental data available</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="col-xl-4 animate-fade-up" style="animation-delay: 0.1s;">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="stat-card bg-primary text-white border-0 shadow-sm p-4" style="border-radius: 24px;">
+                    <i class="bi bi-graph-up-arrow fs-2 mb-3 d-block"></i>
+                    <h3 class="fw-bold mb-1">High Activity</h3>
+                    <p class="mb-0 opacity-75 small">Computer Science department has the highest leave frequency this
+                        month.</p>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="stat-card bg-white border-0 shadow-sm p-4"
+                    style="border-radius: 24px; border: 1px solid #edf2f7 !important;">
+                    <i class="bi bi-people-fill text-primary fs-2 mb-3 d-block"></i>
+                    <h3 class="fw-bold mb-1">85% Active</h3>
+                    <p class="text-muted mb-0 small">Faculty presence across all departments is currently above the 80%
+                        threshold.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

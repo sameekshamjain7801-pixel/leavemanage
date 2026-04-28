@@ -1,0 +1,101 @@
+<!-- View Leave Modal -->
+<div class="modal fade" id="viewLeaveModal" tabindex="-1" aria-labelledby="viewLeaveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0 bg-light rounded-top-4 p-4">
+                <h5 class="modal-title fw-bold text-dark" id="viewLeaveModalLabel">
+                    <i class="bi bi-file-earmark-text me-2 text-primary"></i>Leave Request Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4">
+                    <div class="small text-muted fw-bold mb-1">FACULTY NAME</div>
+                    <div class="fs-6 fw-bold text-dark" id="modal-faculty-name">Loading...</div>
+                </div>
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-6">
+                        <div class="small text-muted fw-bold mb-1">FROM DATE</div>
+                        <div class="fw-bold text-dark" id="modal-from-date">--</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="small text-muted fw-bold mb-1">TO DATE</div>
+                        <div class="fw-bold text-dark" id="modal-to-date">--</div>
+                    </div>
+                    <div class="col-12 time-container" id="modal-time-container" style="display: none; margin-top: 1rem;">
+                        <div class="small text-muted fw-bold mb-1">TIME</div>
+                        <div class="fw-bold text-primary" id="modal-time">--</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="small text-muted fw-bold mb-1">REASON FOR LEAVE</div>
+                    <div class="p-3 bg-light rounded-3 text-dark" id="modal-reason" style="min-height: 80px;">--</div>
+                </div>
+
+                <div>
+                    <div class="small text-muted fw-bold mb-2">CURRENT STATUS</div>
+                    <div id="modal-status-container">
+                        <span class="badge px-3 py-2 rounded-pill" id="modal-status">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4 fw-bold border w-100" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const viewLeaveModal = document.getElementById('viewLeaveModal');
+        if (viewLeaveModal) {
+            viewLeaveModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                
+                const name = button.getAttribute('data-name') || 'N/A';
+                const reason = button.getAttribute('data-reason') || 'N/A';
+                const fromDate = button.getAttribute('data-from') || 'N/A';
+                const toDate = button.getAttribute('data-to') || 'N/A';
+                const fTime = button.getAttribute('data-ftime') || '';
+                const tTime = button.getAttribute('data-ttime') || '';
+                const status = button.getAttribute('data-status') || 'Unknown';
+                
+                document.getElementById('modal-faculty-name').textContent = name;
+                document.getElementById('modal-reason').textContent = reason;
+                document.getElementById('modal-from-date').textContent = fromDate;
+                document.getElementById('modal-to-date').textContent = toDate;
+                
+                const timeContainer = document.getElementById('modal-time-container');
+                const timeEl = document.getElementById('modal-time');
+                if (fTime || tTime) {
+                    timeContainer.style.display = 'block';
+                    timeEl.textContent = (fTime || '--') + ' - ' + (tTime || '--');
+                } else {
+                    timeContainer.style.display = 'none';
+                }
+                
+                const statusEl = document.getElementById('modal-status');
+                statusEl.textContent = status;
+                
+                // Clear existing classes
+                statusEl.className = 'badge px-3 py-2 rounded-pill';
+                
+                // Add new status class
+                if (status === 'Pending') {
+                    statusEl.classList.add('bg-warning', 'text-dark');
+                } else if (status === 'HOD Approved') {
+                    statusEl.classList.add('bg-info', 'text-white');
+                } else if (status === 'Principal Approved') {
+                    statusEl.classList.add('bg-success', 'text-white');
+                } else if (status === 'Rejected') {
+                    statusEl.classList.add('bg-danger', 'text-white');
+                } else {
+                    statusEl.classList.add('bg-secondary', 'text-white');
+                }
+            });
+        }
+    });
+</script>
