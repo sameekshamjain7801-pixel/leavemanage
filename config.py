@@ -95,5 +95,13 @@ config_map = {
 
 def get_config():
     """Return the config object based on FLASK_ENV environment variable."""
+    # On Render, we want to default to production if possible, but for now 
+    # we'll respect the environment variable if it's there.
     env = os.environ.get('FLASK_ENV', 'development').lower()
+    
+    # If we are on Render (indicated by RENDER environment variable),
+    # and FLASK_ENV is not set, we might want to default to production.
+    if 'RENDER' in os.environ and 'FLASK_ENV' not in os.environ:
+        env = 'production'
+        
     return config_map.get(env, DevelopmentConfig)()

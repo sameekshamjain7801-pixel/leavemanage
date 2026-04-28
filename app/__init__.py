@@ -50,6 +50,11 @@ def create_app(config_override=None):
     _register_context_processors(app)
 
     app.logger.info("LeaveFlow application initialized [env=%s]", os.environ.get('FLASK_ENV', 'development'))
+
+    @app.route('/health')
+    def health_check():
+        return 'OK', 200
+
     return app
 
 
