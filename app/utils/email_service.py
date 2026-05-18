@@ -340,4 +340,5 @@ def send_password_recovery_email(name: str, email: str, faculty_id: str, passwor
         f"Your password is: {password}\n\n"
         f"Please switch to a secure password after logging in."
     )
-    return send_email(email, subject, body)
+    send_email_async(email, subject, body)
+    return True
